@@ -1,12 +1,4 @@
-import {
-  StyleSheet,
-  View,
-  Text,
-  SafeAreaView,
-  FlatList,
-  ViewToken,
-  StatusBar,
-} from "react-native";
+import { StyleSheet, View, FlatList, ViewToken, StatusBar } from "react-native";
 import React, { memo, useCallback, useRef, useState } from "react";
 import VideoItem from "@/components/VideoItem";
 import SHORTS_DATA from "@/constants/rawData";
@@ -17,6 +9,7 @@ interface ViewableItemsChanged {
 }
 
 const Caraousel = () => {
+  const [likedItems, setLikedItems] = useState({});
   const [viewableItems, setViewableItems] = useState<ViewToken[]>([]);
   const flatListRef = useRef(null);
 
@@ -26,6 +19,13 @@ const Caraousel = () => {
     },
     []
   );
+
+  const onLikeVideo = useCallback((item) => {
+    setLikedItems((items) => {
+      items = { ...items, [item.id]: !items[item.id] };
+      return items;
+    });
+  }, []);
 
   const viewabilityConfig = useRef({
     itemVisiblePercentThreshold: 50,
@@ -37,8 +37,14 @@ const Caraousel = () => {
       <FlatList
         ref={flatListRef}
         data={SHORTS_DATA}
+        extraData={likedItems}
         renderItem={({ item }) => (
-          <VideoItem item={item} viewableItems={viewableItems} />
+          <VideoItem
+            item={item}
+            viewableItems={viewableItems}
+            onLike={onLikeVideo}
+            isLiked={likedItems[item.id]}
+          />
         )}
         keyExtractor={(item) => item.id}
         pagingEnabled

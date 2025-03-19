@@ -1,5 +1,13 @@
-import { Platform, StyleSheet, Text, View, ViewToken } from "react-native";
-import React, { useEffect, useRef, useState } from "react";
+import {
+  Image,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  ViewToken,
+} from "react-native";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Video, AVPlaybackStatus } from "expo-av";
 import { ResizeMode } from "expo-av";
 import Animated, {
@@ -8,20 +16,30 @@ import Animated, {
   useSharedValue,
   withTiming,
   Easing,
+  interpolate,
 } from "react-native-reanimated";
 import { SCREEN_HEIGHT, SCREEN_WIDTH } from "../constants/utils";
 
+type ITEM = {
+  id: string;
+  videoUri: string;
+  username: string;
+  title: string;
+};
+
 interface VideoItemProps {
-  item: {
-    id: string;
-    videoUri: string;
-    username: string;
-    title: string;
-  };
+  item: ITEM;
   viewableItems: ViewToken[];
+  onLike: (item: ITEM) => void;
+  isLiked: boolean;
 }
 
-const VideoItem = ({ item, viewableItems }: VideoItemProps) => {
+const VideoItem = ({
+  item,
+  viewableItems,
+  onLike,
+  isLiked,
+}: VideoItemProps) => {
   const isViewable = viewableItems.some(
     (viewable) => viewable.item.id === item.id
   );
@@ -29,14 +47,16 @@ const VideoItem = ({ item, viewableItems }: VideoItemProps) => {
   const [hasAnimated, setHasAnimated] = useState(false);
 
   // Reanimated shared values
-  const translateY = useSharedValue(20);
-  const opacity = useSharedValue(0);
+  const animatedValue = useSharedValue(1);
 
   // Create animated styles using Reanimated 2
   const animatedTextStyle = useAnimatedStyle(() => {
     return {
-      transform: [{ translateY: translateY.value }],
-      opacity: opacity.value,
+      transform: [
+        { translateY: interpolate(animatedValue.value, [1, 0], [50, 0]) },
+        { scaleX: interpolate(animatedValue.value, [1, 0], [0.5, 1]) },
+      ],
+      opacity: interpolate(animatedValue.value, [1, 0], [0, 1]),
     };
   });
 
@@ -52,19 +72,13 @@ const VideoItem = ({ item, viewableItems }: VideoItemProps) => {
 
       // Animate text only the first time this card becomes visible
       if (!hasAnimated) {
-        translateY.value = withTiming(0, {
-          duration: 500,
-          easing: Easing.out(Easing.ease),
-        });
-
-        opacity.value = withTiming(
-          1,
+        animatedValue.value = withTiming(
+          0,
           {
             duration: 500,
             easing: Easing.out(Easing.ease),
           },
           () => {
-            // Mark animation as complete (execute on JS thread)
             runOnJS(markAnimationComplete)();
           }
         );
@@ -74,13 +88,21 @@ const VideoItem = ({ item, viewableItems }: VideoItemProps) => {
     }
   }, [isViewable]);
 
+  const onPressLike = useCallback(() => {
+    onLike(item);
+  }, [item]);
+
+  const onPressShare = useCallback(() => {
+    // TODO - HANDLE SHARE
+  }, []);
+
   return (
     <View style={styles.shortItem}>
       <Video
         ref={videoRef}
         source={{ uri: item.videoUri }}
         rate={1.0}
-        volume={1.0}
+        // volume={1.0}
         isMuted={false}
         resizeMode={ResizeMode.COVER}
         shouldPlay={false}
@@ -105,6 +127,29 @@ const VideoItem = ({ item, viewableItems }: VideoItemProps) => {
           <Text style={styles.title}>{item.title}</Text>
         </Animated.View>
       </View>
+      <View style={styles.footer}>
+        <Pressable onPress={onPressLike} style={styles.footerCTA}>
+          {isLiked ? (
+            <Image
+              source={require("@/assets/images/filled_heart.png")}
+              style={styles.icon}
+            />
+          ) : (
+            <Image
+              source={require("@/assets/images/heart.png")}
+              style={styles.icon}
+            />
+          )}
+          <Text style={styles.footerCtaText}>LIKE</Text>
+        </Pressable>
+        <Pressable onPress={onPressShare} style={styles.footerCTA}>
+          <Image
+            source={require("@/assets/images/share.png")}
+            style={styles.icon}
+          />
+          <Text style={styles.footerCtaText}>SHARE</Text>
+        </Pressable>
+      </View>
     </View>
   );
 };
@@ -112,6 +157,10 @@ const VideoItem = ({ item, viewableItems }: VideoItemProps) => {
 export default VideoItem;
 
 const styles = StyleSheet.create({
+  rowCenter: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   container: {
     flex: 1,
     backgroundColor: "#000",
@@ -131,7 +180,8 @@ const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: "space-between",
-    padding: 20,
+    padding: 40,
+    alignItems: "center",
   },
   textContainer: {
     marginTop: Platform.OS === "ios" ? 50 : 30,
@@ -144,6 +194,7 @@ const styles = StyleSheet.create({
     textShadowColor: "rgba(0, 0, 0, 0.75)",
     textShadowOffset: { width: -1, height: 1 },
     textShadowRadius: 10,
+    textAlign: "center",
   },
   title: {
     color: "#fff",
@@ -151,5 +202,36 @@ const styles = StyleSheet.create({
     textShadowColor: "rgba(0, 0, 0, 0.75)",
     textShadowOffset: { width: -1, height: 1 },
     textShadowRadius: 10,
+    textAlign: "center",
+  },
+  footer: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: Platform.OS === "ios" ? 20 : 0,
+    flexDirection: "row",
+    alignItems: "center",
+    height: 52,
+  },
+  footerCTA: {
+    flex: 1,
+    justifyContent: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  footerCtaText: {
+    color: "#fff",
+    fontSize: 14,
+    textShadowColor: "rgba(0, 0, 0, 0.75)",
+    textShadowOffset: { width: -1, height: 1 },
+    textShadowRadius: 10,
+    textAlign: "center",
+    fontWeight: "600",
+  },
+  icon: {
+    height: 24,
+    width: 24,
+    tintColor: "#fff",
   },
 });
