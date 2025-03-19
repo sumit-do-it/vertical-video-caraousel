@@ -1,12 +1,4 @@
-import {
-  StyleSheet,
-  View,
-  Text,
-  SafeAreaView,
-  FlatList,
-  ViewToken,
-  StatusBar,
-} from "react-native";
+import { StyleSheet, View, FlatList, ViewToken, StatusBar } from "react-native";
 import React, { memo, useCallback, useRef, useState } from "react";
 import VideoItem from "@/components/VideoItem";
 import SHORTS_DATA from "@/constants/rawData";
