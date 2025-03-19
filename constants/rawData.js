@@ -2,33 +2,37 @@ const SHORTS_DATA = [
   {
     id: "1",
     videoUri:
-      "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+      "https://videos.pexels.com/video-files/8856785/8856785-sd_360_640_25fps.mp4",
     title: "Amazing sunset views #travel",
-    username: "@traveler",
+    username: "@Rachel Claire",
   },
   {
     id: "2",
-    videoUri: "https://example.com/video2.mp4",
+    videoUri:
+      "https://videos.pexels.com/video-files/4812203/4812203-sd_360_640_30fps.mp4",
     title: "Quick recipe under 1 minute #food",
-    username: "@foodlover",
+    username: "@Pavel Danilyuk",
   },
   {
     id: "3",
-    videoUri: "https://example.com/video3.mp4",
+    videoUri:
+      "https://videos.pexels.com/video-files/5896379/5896379-sd_360_640_24fps.mp4",
     title: "Dance tutorial #trending",
-    username: "@dancepro",
+    username: "@Ruvim Miksanskiy",
   },
   {
     id: "4",
-    videoUri: "https://example.com/video4.mp4",
+    videoUri:
+      "https://videos.pexels.com/video-files/8859849/8859849-sd_360_640_25fps.mp4",
     title: "Life hack you didn't know #lifehack",
-    username: "@lifehacker",
+    username: "@Pavel Danilyuk",
   },
   {
     id: "5",
-    videoUri: "https://example.com/video5.mp4",
+    videoUri:
+      "https://videos.pexels.com/video-files/4937376/4937376-sd_360_640_24fps.mp4",
     title: "Behind the scenes #movie",
-    username: "@filmmaker",
+    username: "@Yaroslav Shuraev",
   },
 ];
 
